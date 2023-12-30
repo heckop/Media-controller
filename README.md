@@ -1,4 +1,4 @@
-Author: Ashish Bharti
+Author: Ashish Bharti  
 Control Audio and Video Elements from all tabs from the add-on/extension toolbox
 
 <b>Features:</b>
