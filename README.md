@@ -14,7 +14,7 @@ Control Audio and Video Elements from all tabs from the add-on/extension toolbox
 <b>Important:</b>
 <ol>
     <li><b>add-on Permissions:</b>
-        This add-on generally minimises the user's permission, like only media permissions is used in the source code.If there is any scope of improvement, then open a issue at my github repo.
+        This add-on generally minimises the user's permission, like only media permissions is used in the source code.If there is any scope of improvement, then create an issue at my github repo.
         More Details on the individual permission can be found here: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions
     </li>
     <li><b>Payment:</b>
