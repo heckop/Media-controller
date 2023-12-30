@@ -1,0 +1,22 @@
+{
+  "author": "heckop",
+  "homepage_url": "https://github.com/heckop/Media-controller",
+  "browser_action": {
+    "default_area": "navbar",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "256": "sound-recognition.png"
+  },
+  "manifest_version": 2,
+  "name": "Media Controller",
+  "permissions": ["tabs"],
+  "version": "1.0.0",
+  "web_accessible_resources": ["attach.js"]
+}
