@@ -25,7 +25,7 @@ Control Audio and Video Elements from all tabs from the add-on/extension toolbox
     <li><b>Feature suggestion:</b>
         If you want to add some new features, then either you can create an issue or add feature on your cloned repo and create a PR.
     </li>
-    <li><b>Bugs</b>
+    <li><b>Bugs:</b>
         If you find any Bug, Then create an issue on the add-on repository. I will try to fix the bug asap.
     </li>
 </ol>
