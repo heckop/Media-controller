@@ -1,198 +1,96 @@
 /*global browser */
-
 const mediaElements = new Map();
 
 function getThumbnail(video) {
   let canvas = document.createElement("canvas");
   let ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0,300,200);
-  let bgcolor = ctx.getImageData(0, 0, 1, 1).data;
-  let fgcolor = (0xffffff ^ ((1 << 24) | (bgcolor[0] << 16) | (bgcolor[1] << 8) | bgcolor[2])).toString(16).slice(1);
-  return {thumbnail:canvas.toDataURL(),bgcolor:bgcolor,fgcolor:fgcolor};
+  canvas.width = 100; canvas.height = 100;
+  ctx.drawImage(video, 0, 0, 100, 100);
+  let bgcolor = ctx.getImageData(50, 50, 1, 1).data;
+  return { thumbnail: canvas.toDataURL(), bgcolor: [bgcolor[0], bgcolor[1], bgcolor[2]] };
 }
 
-// get all media elements and their states
 function handleQuery() {
-  console.debug("handleQuery");
   const ret = [];
   const els = document.querySelectorAll("video,audio");
-  //console.log(els.length);
   let count = 1;
+  let ms = ('mediaSession' in navigator && navigator.mediaSession.metadata) ? navigator.mediaSession.metadata : null;
+  let posState = (navigator.mediaSession && navigator.mediaSession.getPositionState) ? navigator.mediaSession.getPositionState() : null;
+
   for (const el of els) {
-    mediaElements.set(count, el); // required for controlling later
-    if (
-      /* to ensure that the media element is ready to be controlled */
-      el.readyState > 0 && // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState
-      !isNaN(el.duration) // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/duration
-    ) {
+    mediaElements.set(count, el); 
+    if (el.readyState > 0) {
+      let thumbData = el.tagName.toLowerCase() === "video" ? getThumbnail(el) : {thumbnail: "", bgcolor: [41,42,45]};
+      let duration = (posState && posState.duration && posState.duration > 1) ? posState.duration : el.duration;
+      let currentTime = (posState && posState.position) ? posState.position : el.currentTime;
+      if (isNaN(duration) || duration < 1) duration = 100; 
+
       ret.push({
-        poster: el.tagName.toLowerCase() === "video" ? getThumbnail(el).thumbnail : "",
-        type: el.tagName.toLowerCase(),
-        duration: el.duration,
-        currentTime: el.currentTime,
+        poster: (ms && ms.artwork && ms.artwork.length) ? ms.artwork[ms.artwork.length-1].src : thumbData.thumbnail,
+        mediaTitle: ms ? ms.title : "",
+        mediaArtist: ms ? ms.artist : "",
+        duration: duration,
+        currentTime: currentTime,
         playing: !el.paused,
         volume: el.volume,
-        muted: el.muted,
         id: count,
-        bgcolor: el.tagName.toLowerCase() === "video" ? getThumbnail(el).bgcolor : "#ffffff",
-        fgcolor : el.tagName.toLowerCase() === "video" ? getThumbnail(el).fgcolor : "#000000",
+        bgcolor: thumbData.bgcolor
       });
     }
     count++;
   }
-
   return ret;
 }
 
-function handlePause(ids) {
-  console.debug("handlePause");
-  for (const id of ids) {
-    if (mediaElements.has(id)) {
-      mediaElements.get(id).pause();
-    }
+function simulateClick(selectors) {
+  for (let selector of selectors) {
+    let btn = document.querySelector(selector);
+    if (btn) { btn.click(); return true; }
   }
-  return "play";
+  return false;
 }
 
-function handlePauseAll() {
-  console.debug("handlePause");
-  for (const [, el] of mediaElements) {
-    el.pause();
-  }
-  return "ok";
-}
-
-function handlePlay(ids) {
-  console.debug("handlePlay");
-  for (const id of ids) {
-    if (mediaElements.has(id)) {
-      mediaElements.get(id).play();
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.cmd === "query") { sendResponse(handleQuery()); return true; }
+  
+  (async () => {
+    const el = mediaElements.get(request.id);
+    switch (request.cmd) {
+      case "play":
+      case "pause":
+        // Unified Click List: Spotify + YouTube
+        const clicked = simulateClick([
+          '[data-testid="control-button-playpause"]', 
+          '.ytp-play-button', 
+          'button[aria-label="Play"]', 
+          'button[aria-label="Pause"]'
+        ]);
+        if (!clicked && el) { 
+          request.cmd === "play" ? el.play() : el.pause(); 
+        }
+        break;
+      case "volume": if(el) el.volume = request.volume; break;
+      case "currentTime": if(el) el.currentTime = request.currentTime; break;
+      case "pip": 
+        const video = mediaElements.get(request.id);
+        if (video && video.tagName === 'VIDEO') {
+          try { document.pictureInPictureElement ? await document.exitPictureInPicture() : await video.requestPictureInPicture(); } catch (e) {}
+        }
+        break;
+      case "nextTrack":
+        simulateClick(['[data-testid="control-button-skip-forward"]', '.ytp-next-button', 'button[aria-label="Next"]']);
+        break;
+      case "prevTrack":
+        simulateClick(['[data-testid="control-button-skip-back"]', '.ytp-prev-button', 'button[aria-label="Previous"]']);
+        break;
     }
-  }
-  return "pause";
-}
-
-function handleMute(ids) {
-  console.debug("handleMute");
-  for (const id of ids) {
-    if (mediaElements.has(id)) {
-      mediaElements.get(id).muted = true;
-    }
-  }
-  return "unmute";
-}
-
-function handleUnMute(ids) {
-  console.debug("handleUnMute");
-  for (const id of ids) {
-    if (mediaElements.has(id)) {
-      mediaElements.get(id).muted = false;
-    }
-  }
-  return "mute";
-}
-
-function handlePIP(ids) {
-  console.debug("handleMute");
-  for (const id of ids) {
-    if (mediaElements.has(id)) {
-      mediaElements.get(id).requestPictureInPicture(); // not supported ref. https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/requestPictureInPicture
-    }
-  }
-  return "unmute";
-}
-
-async function handleFullscreen(ids) {
-  console.debug("handleMute");
-  for (const id of ids) {
-    if (mediaElements.has(id)) {
-      try {
-        await mediaElements.get(id).requestFullscreen();
-        return true;
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
-    }
-  }
-}
-
-async function handleVolume(id, volume) {
-  if (mediaElements.has(id)) {
-    try {
-      mediaElements.get(id).volume = volume;
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
-  }
-}
-
-async function handleCurrentTime(id, currentTime) {
-  if (mediaElements.has(id)) {
-    try {
-      mediaElements.get(id).currentTime = currentTime;
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
-  }
-}
-
-async function handleFocus(id) {
-  console.debug("handleFocus", id);
-  if (mediaElements.has(id)) {
-    try {
-      console.debug("scrollIntoView");
-      mediaElements.get(id).scrollIntoView();
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
-  }
-}
-browser.runtime.onMessage.addListener((request) => {
-  console.debug("onMessage", JSON.stringify(request, null, 4));
-  switch (request.cmd) {
-    case "query":
-      return Promise.resolve(handleQuery());
-    case "play":
-      return Promise.resolve(handlePlay(request.ids));
-    case "pause":
-      return Promise.resolve(handlePause(request.ids));
-    case "pauseAll":
-      return Promise.resolve(handlePauseAll());
-    case "mute":
-      return Promise.resolve(handleMute(request.ids));
-    case "unmute":
-      return Promise.resolve(handleUnMute(request.ids));
-    case "pip":
-      return Promise.resolve(handlePIP(request.ids));
-    case "fullscreen":
-      return Promise.resolve(handleFullscreen(request.ids));
-    case "volume":
-      return Promise.resolve(handleVolume(request.id, request.volume));
-    case "currentTime":
-      return Promise.resolve(
-        handleCurrentTime(request.id, request.currentTime)
-      );
-    case "focus":
-      return Promise.resolve(handleFocus(request.id));
-    default:
-      console.error("unknown request", request);
-      break;
-  }
+  })();
+  sendResponse(true);
+  return true;
 });
 
-console.debug("content.js");
-
 setTimeout(() => {
-  console.debug("injecting media.js into document head ");
-  var s = document.createElement("script");
+  let s = document.createElement("script");
   s.src = browser.runtime.getURL("attach.js");
-  s.onload = () => s.remove();
   document.head.appendChild(s);
-}, 5000);
+}, 2000);

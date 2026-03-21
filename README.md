@@ -1,4 +1,4 @@
-Author: Ashish Bharti  
+Author: Ashish Bharti
 Control Audio and Video Elements from all tabs from the add-on/extension toolbox
 
 <b>Features:</b>
@@ -7,14 +7,14 @@ Control Audio and Video Elements from all tabs from the add-on/extension toolbox
   <li>Focus any site</li>
   <li>Site/media volume Control</li>
   <li>Seek media</li>
-  <li>PIP (to be available soon)</li>
-  <li>...</li>
+  <li>PIP (Better to enable firefox inbuilt PIP mode)</li>
+  <li>Next/Previous button to control media</li>
 </ul>
 
 <b>Important:</b>
 <ol>
     <li><b>add-on Permissions:</b>
-        This add-on generally minimises the user's permission, like only media permissions is used in the source code.If there is any scope of improvement, then create an issue at my github repo.
+        This add-on generally minimises the user's permission, like only media permissions is used in the source code.If there is any scope of improvement, then open a issue at my github repo.
         More Details on the individual permission can be found here: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions
     </li>
     <li><b>Payment:</b>

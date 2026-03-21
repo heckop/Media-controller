@@ -1,22 +1,37 @@
 {
-  "author": "heckop",
-  "homepage_url": "https://github.com/heckop/Media-controller",
-  "browser_action": {
-    "default_area": "navbar",
-    "default_popup": "popup.html"
-  },
-  "content_scripts": [
-    {
-      "js": ["content.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
+  "manifest_version": 3,
+  "name": "Media Controller Pro",
+  "version": "2.6.0",
+  "description": "Adaptive media controller with realtime updates and customizable controls.",
   "icons": {
     "256": "sound-recognition.png"
   },
-  "manifest_version": 2,
-  "name": "Media Controller",
-  "permissions": ["tabs"],
-  "version": "1.0.0",
-  "web_accessible_resources": ["attach.js"]
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "sound-recognition.png"
+  },
+  "permissions": ["tabs", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": ["<all_urls>"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["attach.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{a5405ad8-3fa6-4e1f-84de-4dac3d37ac70}",
+      "strict_min_version": "148.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
 }

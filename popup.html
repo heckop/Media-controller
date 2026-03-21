@@ -1,15 +1,53 @@
 <!DOCTYPE html>
+<html>
 <head>
   <meta charset="utf-8" />
-  <title></title>
-  <style>
-    body {
-    }
-    #tabs {
-    }
-  </style>
+  <title>Media Controller</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
-<body style="background: rgb(239, 239, 239);background-image: url('snow.jpg'); background-size: cover; background-repeat: no-repeat; padding: 5px">
-  <div id="tabs">no media detected </div>
+<body>
+  <div id="tabs">
+    <div id="empty-state">No media detected</div>
+  </div>
+
+  <template id="media-card-template">
+    <div class="media-card">
+      <div class="card-header">
+        <img class="favicon" src="" alt="">
+        <span class="site-title"></span>
+        <div class="actions">
+          <button class="focus-btn" title="Focus Tab">↗️</button>
+          <button class="pip-btn" title="Picture-in-Picture">📺</button>
+          <button class="mute-btn" title="Mute Tab">🔊</button>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="cover-art-container">
+          <img class="cover-art" src="audio.jpeg" alt="Cover">
+        </div>
+
+        <div class="media-details-column">
+          <div class="media-title-container">
+            <div class="media-title">Unknown Media</div>
+          </div>
+          <div class="media-artist"></div>
+          
+          <div class="sliders-inline">
+            <input type="range" class="progress-bar timeline" min="0" max="100" value="0">
+            <input type="range" class="volume-bar" min="0" max="100" value="100">
+          </div>
+        </div>
+
+        <div class="playback-controls-column">
+          <button class="prev-btn control-icon" title="Previous">⏪</button>
+          <button class="play-pause-btn control-icon">▶</button>
+          <button class="next-btn control-icon" title="Next">⏩</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <script src="popup.js"></script>
 </body>
+</html>
